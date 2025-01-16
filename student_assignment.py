@@ -38,3 +38,5 @@ def demo(question):
     response = llm.invoke([message])
     
     return response
+
+print(demo("你好 說中文 我是誰").content)
