@@ -258,8 +258,8 @@ def question4_to_prompt(question, data_url):
             }
     }
     """
-    print("************************** format_instructions ****************************")
-    print(format_instructions)
+    # print("************************** format_instructions ****************************")
+    # print(format_instructions)
     # prompt = ChatPromptTemplate.from_messages([
     #     ("system", "使用台灣語言並回答問題,{format_instructions1}"),
     #     few_shot_prompt,
@@ -282,8 +282,8 @@ def question4_to_prompt(question, data_url):
     )
     prompt = prompt.partial(format_instructions1=format_instructions)
     prompt_str = prompt.format_messages(question1=question)
-    print("************************** prompt_str ****************************")
-    print(prompt_str)
+    # print("************************** prompt_str ****************************")
+    # print(prompt_str)
     return prompt_str
 
 def get_image_url():
@@ -370,6 +370,7 @@ def generate_hw04(question):
     data_url = get_image_url()
     prompt_str = question4_to_prompt(question, data_url)
     response = llm.invoke(prompt_str).content
+    print("************************** response ****************************")
     return response
     # return demo(prompt_str).content
     
@@ -391,9 +392,14 @@ def demo(question):
     print("************************** response ****************************")
     return response
 
+# print(generate_hw01("2025年台灣10月紀念日"))
 # print(generate_hw01("2024年台灣10月紀念日有哪些?"))
+
 # print(generate_hw02("2024年台灣10月紀念日有哪些?"))
+
 # print(generate_hw03("2024年台灣10月紀念日有哪些?", """根據先前的節日清單，這個節日{"date": "10-31", "name": "蔣公誕辰紀念日"}是否有在該月份清單？"""))
 # print(generate_hw03("2024年台灣9月紀念日有哪些?", """根據先前的節日清單，這個節日{"date": "9-3", "name": "軍人節"}是否有在該月份清單？"""))
-print(generate_hw04("請問中華台北的積分是多少?"))
-# print(generate_hw01("2025年台灣10月紀念日"))
+
+# print(generate_hw04("請問中華台北的積分是多少?"))
+# print(generate_hw04("請問日本的積分是多少?"))
+print(generate_hw04("請問美國的積分是多少?"))
