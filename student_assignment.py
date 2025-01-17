@@ -216,22 +216,20 @@ def question3_to_prompt(question):
 
 def question4_to_prompt(question, data_url):
     examples = [
-        {"input":"""請問中華台北的積分是多少""", "output":"""
+        {"input":"""請問中華台北的積分是多少""", "output":"""{
+    "Result": 
         {
-            "Result": 
-                {
-                    "score": 5498
-                }
+            "score": 5498
         }
-         """},
-        {"input":"""請問日本的積分是多少""", "output":"""
+}"""
+         },
+        {"input":"""請問日本的積分是多少""", "output":"""{
+    "Result": 
         {
-            "Result": 
-                {
-                    "score": 6858
-                }
+            "score": 6858
         }
-         """},
+}"""
+         },
     ]
     example_prompt = ChatPromptTemplate.from_messages(
         [
@@ -250,13 +248,13 @@ def question4_to_prompt(question, data_url):
     output_parser = StructuredOutputParser(response_schemas=responseSchema)
     format_instructions = output_parser.get_format_instructions()
     format_instructions = """
-    The output should be a markdown code snippet formatted in the following schema, without the leading and trailing "```json" and "```":
-    {
-        "Result":
-            {
-                "score": int  // 隊伍積分。
-            }
-    }
+The output should be a markdown code snippet formatted in the following schema, without the leading and trailing "```json" and "```":
+{
+    "Result":
+        {
+            "score": int  // 隊伍積分。
+        }
+}
     """
     # print("************************** format_instructions ****************************")
     # print(format_instructions)
