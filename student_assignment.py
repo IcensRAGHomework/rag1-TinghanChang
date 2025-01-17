@@ -17,6 +17,9 @@ from pydantic import BaseModel, Field
 #hw3
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+#hw4
+import base64
+from mimetypes import guess_type
 
 gpt_chat_version = 'gpt-4o'
 gpt_config = get_model_configuration(gpt_chat_version)
@@ -210,6 +213,98 @@ def question3_to_prompt(question):
     print(prompt_str)
     return prompt_str
 
+
+def question4_to_prompt(question, data_url):
+    examples = [
+        {"input":"""請問中華台北的積分是多少""", "output":"""
+        {
+            "Result": 
+                {
+                    "score": 5498
+                }
+        }
+         """},
+        {"input":"""請問日本的積分是多少""", "output":"""
+        {
+            "Result": 
+                {
+                    "score": 6858
+                }
+        }
+         """},
+    ]
+    example_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("human", "{input}"),
+            ("ai", "{output}"),
+        ]
+    )
+    few_shot_prompt = FewShotChatMessagePromptTemplate(
+        example_prompt=example_prompt,
+        examples=examples
+    )
+
+    responseSchema = [
+        ResponseSchema(name="score", description="隊伍積分。")
+    ]
+    output_parser = StructuredOutputParser(response_schemas=responseSchema)
+    format_instructions = output_parser.get_format_instructions()
+    format_instructions = """
+    The output should be a markdown code snippet formatted in the following schema, without the leading and trailing "```json" and "```":
+    {
+        "Result":
+            {
+                "score": int  // 隊伍積分。
+            }
+    }
+    """
+    print("************************** format_instructions ****************************")
+    print(format_instructions)
+    # prompt = ChatPromptTemplate.from_messages([
+    #     ("system", "使用台灣語言並回答問題,{format_instructions1}"),
+    #     few_shot_prompt,
+    #     ("human", "{question1}")
+    # ])
+    
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", "辨識圖片中的文字表格,{format_instructions1}"),
+        few_shot_prompt,
+        ("user",
+            [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": data_url},
+                }
+            ],
+        ),
+        ("human", "{question1}")
+        ]
+    )
+    prompt = prompt.partial(format_instructions1=format_instructions)
+    prompt_str = prompt.format_messages(question1=question)
+    print("************************** prompt_str ****************************")
+    print(prompt_str)
+    return prompt_str
+
+def get_image_url():
+    # Function to encode a local image into data URL 
+    def local_image_to_data_url(image_path):
+        # Guess the MIME type of the image based on the file extension
+        mime_type, _ = guess_type(image_path)
+        if mime_type is None:
+            mime_type = 'application/octet-stream'  # Default MIME type if none is found
+
+        # Read and encode the image file
+        with open(image_path, "rb") as image_file:
+            base64_encoded_data = base64.b64encode(image_file.read()).decode('utf-8')
+
+        # Construct the data URL
+        return f"data:{mime_type};base64,{base64_encoded_data}"
+
+    image_path = 'baseball.png'
+    data_url = local_image_to_data_url(image_path)
+    return data_url
+
 def generate_hw01(question):
     # promptTemplate = PromptTemplate(template="告訴我多個關於{topic}的知識", input_variables=["topic"])
     # question = promptTemplate.format(topic=question)
@@ -271,7 +366,12 @@ def generate_hw03(question2, question3):
     return response
     
 def generate_hw04(question):
-    pass
+    llm = get_llm()
+    data_url = get_image_url()
+    prompt_str = question4_to_prompt(question, data_url)
+    response = llm.invoke(prompt_str).content
+    return response
+    # return demo(prompt_str).content
     
 def demo(question):
     llm = get_llm()
@@ -294,5 +394,6 @@ def demo(question):
 # print(generate_hw01("2024年台灣10月紀念日有哪些?"))
 # print(generate_hw02("2024年台灣10月紀念日有哪些?"))
 # print(generate_hw03("2024年台灣10月紀念日有哪些?", """根據先前的節日清單，這個節日{"date": "10-31", "name": "蔣公誕辰紀念日"}是否有在該月份清單？"""))
-print(generate_hw03("2024年台灣9月紀念日有哪些?", """根據先前的節日清單，這個節日{"date": "9-3", "name": "軍人節"}是否有在該月份清單？"""))
+# print(generate_hw03("2024年台灣9月紀念日有哪些?", """根據先前的節日清單，這個節日{"date": "9-3", "name": "軍人節"}是否有在該月份清單？"""))
+print(generate_hw04("請問中華台北的積分是多少?"))
 # print(generate_hw01("2025年台灣10月紀念日"))
